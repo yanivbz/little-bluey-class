@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Little Bluey Class – הכיתה של אופיר</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header><button class="icon" id="homeBtn" aria-label="בית">🏠</button><h1>⭐ <span id="totStars">0</span></h1><button class="icon" data-go="parent" aria-label="הורים">⚙️</button></header>
+<main>
+<div class="cast"><div class="pup bluey" id="pupB"></div><div class="bubble" id="bubble">שלום אופיר!</div><div class="pup bingo" id="pupG"></div></div>
+
+<section class="screen" id="home">
+ <div class="card" style="margin-bottom:16px"><label for="listSel">רשימת מילים:</label><select id="listSel"></select></div>
+ <div class="btns">
+  <button class="big b" data-go="full">👀 הצגה מלאה<small>רואים ומעתיקים</small></button>
+  <button class="big v" data-go="flash">⚡ זיכרון<small>מסתכלים, זוכרים, כותבים</small></button>
+  <button class="big o" data-go="class">🔊 הכתבה<small>שומעים וכותבים</small></button>
+  <button class="big g" data-go="math">➕ חשבון<small>פותרים במחברת</small></button>
+ </div>
+</section>
+
+<section class="screen" id="dict"><div class="card">
+ <div class="prog" id="dProg"></div>
+ <div class="word" id="dWord"></div>
+ <div class="row" id="dBtns"></div>
+</div></section>
+
+<section class="screen" id="math"><div class="card">
+ <div class="lv" id="lv"></div>
+ <div class="prog" id="mProg"></div>
+ <div class="ex" id="ex"></div>
+ <div class="dots" id="dots"></div>
+ <div class="row"><button class="big p" id="aidBtn">🔵 עזרה</button><button class="big b" id="mBtn">בדיקה ✔️</button></div>
+ <div class="stars" id="mStars"></div>
+</div></section>
+
+<section class="screen" id="parent"><div class="card" style="text-align:right">
+ <h2>אזור הורים</h2>
+ <div class="lists" id="lists"></div>
+ <label>שם הרשימה</label><input id="pName" placeholder="למשל: שבוע 3">
+ <label>מילים (מילה בכל שורה, עם ניקוד)</label><textarea id="pWords"></textarea>
+ <div class="row"><button class="big g" id="saveList">💾 שמירה</button><button class="big b" id="newList">➕ רשימה חדשה</button></div>
+ <label>צילום דף מילים</label><input type="file" accept="image/*" id="img"><img id="prev" hidden alt="">
+ <p class="note">זיהוי טקסט אוטומטי (OCR) – בקרוב. בינתיים הקלידו את המילים ידנית.</p>
+ <label>זמן הצגה במצב זיכרון (שניות)</label><input type="number" id="flashSec" min="1" max="15">
+ <p class="note">אם אין קול עברי במכשיר, בהכתבה תופיע המילה במקום הקראה.</p>
+</div></section>
+</main>
+<div id="confetti"></div>
+<script src="words.js"></script><script src="app.js"></script>
+</body></html>

@@ -1,7 +1,9 @@
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const S = { get: (k, d) => { try { return JSON.parse(localStorage.getItem("ofir_" + k)) ?? d; } catch { return d; } },
             set: (k, v) => { try { localStorage.setItem("ofir_" + k, JSON.stringify(v)); return true; } catch { alert("אין מספיק מקום לשמירה"); return false; } } };
-let lists = S.get("lists", null) || structuredClone(window.SEED_LISTS), cur = S.get("cur", lists[0]?.id);
+const _set = S.set; S.set = (k, v) => _set(k, k === "lists" ? v.filter(l => !l.builtin) : v);
+let lists = [...structuredClone(window.SEED_LISTS), ...S.get("lists", []).filter(l => !l.builtin && l.id !== "sample" && l.id !== "week")];
+let cur = S.get("cur", null); if (!lists.some(l => l.id === cur) || lists.every(l => l.builtin)) cur = "week";
 const PRAISE = ["כל הכבוד אופיר!", "מעולה אופיר!", "את אלופה, אופיר!", "יופי של עבודה, אופיר!"];
 const rnd = a => a[Math.floor(Math.random() * a.length)];
 const pose = (img, p) => img.src = `assets/${p}.webp`;
@@ -9,11 +11,12 @@ $$("img[data-pose]").forEach(i => pose(i, i.dataset.pose));
 
 // speech
 let voice = null;
-const lv_ = () => voice = speechSynthesis.getVoices().find(v => /^(he|iw)/i.test(v.lang)) || null;
-if ("speechSynthesis" in window) { lv_(); speechSynthesis.onvoiceschanged = lv_; }
-function speak(t) {
-  if (!("speechSynthesis" in window)) return false;
-  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t);
+const TTS = "speechSynthesis" in window;
+const lv_ = () => voice = speechSynthesis.getVoices().find(v => /^(he|iw)([-_]|$)/i.test(v.lang)) || null;
+if (TTS) { lv_(); speechSynthesis.addEventListener?.("voiceschanged", lv_); }
+function speak(t) { // call synchronously from a tap handler
+  if (!TTS) return false; if (!voice) lv_();
+  speechSynthesis.cancel(); speechSynthesis.resume(); const u = new SpeechSynthesisUtterance(t);
   u.lang = "he-IL"; u.rate = .8; if (voice) u.voice = voice; speechSynthesis.speak(u); return !!voice;
 }
 const say = (el, t, talk = true) => { el.textContent = t; el.style.animation = "none"; el.offsetWidth; el.style.animation = ""; if (talk) speak(t); };
@@ -54,10 +57,16 @@ const rec = async (mode, key, val) => { const db = await DB; if (!db) return nul
   const s = db.transaction("rec", mode === "get" ? "readonly" : "readwrite").objectStore("rec");
   const q = mode === "get" ? s.get(key) : mode === "put" ? s.put(val, key) : s.delete(key); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); }); };
 const recKey = (lid, w) => lid + "|" + w;
-let audio;
-async function sayWord(w) {
-  const b = await rec("get", recKey(curList().id, w));
-  if (b) { audio?.pause(); audio = new Audio(URL.createObjectURL(b)); audio.play(); return true; }
+let audio, recUrls = {};
+async function loadRecs() { // cache parent recordings so playback stays synchronous in tap handlers
+  const l = curList(); recUrls = {};
+  for (const w of l.words) { const b = await rec("get", recKey(l.id, w)); if (b) recUrls[w] = URL.createObjectURL(b); }
+}
+function playUrl(u) { if (TTS) speechSynthesis.cancel(); audio?.pause(); audio = new Audio(u); audio.play().catch(() => {}); return true; }
+function sayWord(w) { // bundled audio -> parent recording -> device TTS
+  const l = curList(), i = l.audio ? l.words.indexOf(w) : -1;
+  if (i >= 0 && l.audio[i]) return playUrl(`assets/audio/${l.audio[i]}.mp3`);
+  if (recUrls[w]) return playUrl(recUrls[w]);
   return speak(w);
 }
 
@@ -77,7 +86,7 @@ function startDict(m) {
   mode = m === "hard" ? "class" : m;
   words = m === "hard" ? all.filter(w => w in h) : [...all.filter(w => w in h), ...all.filter(w => !(w in h))];
   wi = 0; if (!words.length) return go(m === "hard" ? "modes" : "parent");
-  show();
+  show(); loadRecs();
 }
 function reveal() {
   stage = 2; const W = $("#word"); W.hidden = false; W.classList.remove("h");
@@ -85,7 +94,7 @@ function reveal() {
   pose($("#pd"), "think"); say($("#bd"), "בדקי במחברת – כתבת נכון?", false); $("#dMain").textContent = "הבאה";
 }
 function show() {
-  clearTimeout(ft); dots(words.length, wi); stage = 0; $("#review").hidden = true;
+  clearTimeout(ft); $("#ttsHint").hidden = true; dots(words.length, wi); stage = 0; $("#review").hidden = true;
   const w = words[wi], W = $("#word"), b = $("#bd");
   W.textContent = w; W.classList.remove("h"); W.hidden = false;
   $("#play").hidden = $("#again").hidden = true; $("#dPrev").hidden = mode !== "full" || wi === 0;
@@ -98,7 +107,8 @@ function show() {
   if (mode === "class") {
     W.hidden = true; $("#play").hidden = $("#again").hidden = false; $("#dMain").textContent = "המשך";
     say(b, "הקשיבי אופיר...", false); stage = 1;
-    sayWord(w).then(ok => { if (!ok) { W.hidden = false; $("#play").hidden = true; say(b, "אין קול במכשיר – קראי את המילה", false); } });
+    if (!sayWord(w)) { W.hidden = false; say(b, "קראי את המילה, אופיר", false);
+      $("#ttsHint").hidden = false; }
   }
 }
 $("#play").onclick = $("#again").onclick = () => mode === "flash" ? show() : sayWord(words[wi]);
@@ -211,7 +221,7 @@ window.__nik = { setMark, clusters };
 const clean = s => s.normalize("NFC").split("\n").map(x => x.trim()).filter(Boolean);
 function renderParent() {
   $("#plist").innerHTML = lists.map(l => `<div><span>${l.name} · ${l.words.length}${l.img ? " 📷" : ""}</span><span>
-   ${l.img ? `<button data-v="${l.id}">🖼️</button>` : ""}<button data-e="${l.id}">✏️</button><button data-d="${l.id}">🗑️</button></span></div>`).join("");
+   ${l.img ? `<button data-v="${l.id}">🖼️</button>` : ""}<button data-e="${l.id}">✏️</button>${l.builtin ? "" : `<button data-d="${l.id}">🗑️</button>`}</span></div>`).join("");
   $("#sec").value = S.get("sec", 3); renderWords(); preview();
 }
 $("#plist").onclick = e => { const d = e.target.dataset, l = lists.find(x => x.id === (d.e || d.d || d.v)); if (!l) return;
@@ -222,6 +232,7 @@ $("#newL").onclick = () => { editId = null; $("#pName").value = $("#pWords").val
 $("#save").onclick = () => {
   const w = clean($("#pWords").value); if (!w.length) return alert("נא להוסיף מילים");
   const name = $("#pName").value.trim() || "רשימה חדשה", img = $("#prev").hidden ? null : $("#prev").src;
+  if (lists.find(x => x.id === editId)?.builtin) editId = null;
   if (editId) Object.assign(lists.find(x => x.id === editId), { name, words: w, img });
   else { editId = "l" + Date.now(); lists.push({ id: editId, name, words: w, img }); S.set("cur", cur = editId); }
   if (S.set("lists", lists)) { renderParent(); renderRecs(); $("#status").textContent = "נשמר ✔"; }
@@ -262,7 +273,7 @@ $("#img").onchange = async e => {
   } catch { st("הזיהוי נכשל. התמונה נשמרה, אפשר להקליד ידנית."); }
 };
 
-showCoins();
+showCoins(); loadRecs();
 route();
 
 // parent voice recordings per word (optional)
@@ -281,7 +292,7 @@ $("#recList").onclick = async e => {
       const st = await navigator.mediaDevices.getUserMedia({ audio: true }), mr = new MediaRecorder(st), ch = [];
       b.textContent = "⏺️"; b.classList.add("live");
       mr.ondataavailable = ev => ch.push(ev.data);
-      mr.onstop = async () => { st.getTracks().forEach(t => t.stop()); await rec("put", k, new Blob(ch, { type: mr.mimeType })); renderRecs(); };
+      mr.onstop = async () => { st.getTracks().forEach(t => t.stop()); await rec("put", k, new Blob(ch, { type: mr.mimeType })); renderRecs(); loadRecs(); };
       mr.start(); b.onclick = () => mr.state === "recording" && mr.stop(); setTimeout(() => mr.state === "recording" && mr.stop(), 3000);
     } catch { st("אין גישה למיקרופון"); }
   }

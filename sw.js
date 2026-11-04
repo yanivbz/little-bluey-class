@@ -1,4 +1,4 @@
-const V = "pt-v4", SHELL = ["./", "index.html", "style.css", "app.js", "words.js", "manifest.json", "assets/wave.webp", "assets/pencil.webp", "assets/think.webp", "assets/cheer.webp", "assets/icon-192.png", "room.js", "assets/room/bg.webp"];
+const V = "pt-v5", SHELL = ["./", "index.html", "style.css", "app.js", "words.js", "manifest.json", "assets/wave.webp", "assets/pencil.webp", "assets/think.webp", "assets/cheer.webp", "assets/icon-192.png", "room.js", "assets/room/bg.webp"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL))); });
 self.addEventListener("message", e => e.data === "skip" && self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())));

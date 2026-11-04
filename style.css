@@ -49,3 +49,8 @@ textarea{min-height:150px;font-size:1.4rem;line-height:1.6}
 .btnrow{display:flex;gap:10px}.btnrow button,#okS{flex:1;background:var(--mint);border-radius:16px;padding:12px}.btnrow .save{background:var(--peachD);color:#fff}
 .note{font-size:.95rem;opacity:.75}#prev{max-width:100%;border-radius:14px}
 .brand{font-family:Rubik;font-weight:600;font-size:.95rem;opacity:.6;margin:0;letter-spacing:.5px}
+.install{display:inline-flex;align-items:center;gap:6px;background:var(--lav);border-radius:20px;padding:8px 16px;font-size:1rem;box-shadow:var(--sh);margin-top:-6px}
+.sheet{position:fixed;inset:0;background:#4a322640;display:flex;align-items:flex-end;z-index:10;animation:in .3s}
+.sheet>div{background:var(--bg);width:100%;border-radius:28px 28px 0 0;padding:22px;text-align:center;font-size:1.3rem}
+.sheet img{width:110px}.sheet p{margin:8px 0 16px;line-height:1.6}
+[hidden]{display:none!important}

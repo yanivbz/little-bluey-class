@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Puppy Teacher · המורה של אופיר</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFF8EF"><link rel="icon" href="assets/wave.webp">
+<title>Puppy Teacher · המורה של אופיר</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFF8EF"><link rel="icon" href="assets/icon-192.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Puppy Teacher"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&family=Varela+Round&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css"></head>
@@ -12,6 +12,7 @@
 <main>
 <section id="home" class="screen">
  <button class="gear" data-go="parent" aria-label="הורים">⚙️</button>
+ <button class="install" id="install" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg> התקנת האפליקציה</button>
  <p class="brand">Puppy Teacher · המורה של אופיר</p><h1>שלום אופיר!</h1><p class="sub">מוכנה ללמוד ולהתקדם היום? 🩷</p>
  <img class="pup" data-pose="wave" alt="">
  <div class="cards">
@@ -65,5 +66,6 @@
 </section>
 </main>
 <div id="fx"></div>
+<div class="sheet" id="iosSheet" hidden><div><img src="assets/wave.webp" alt=""><p>לחצו על כפתור השיתוף ⬆️<br>ואז "הוסף למסך הבית"</p><button class="main" id="sheetOk">הבנתי</button></div></div>
 <script src="words.js"></script><script src="app.js"></script>
 </body></html>

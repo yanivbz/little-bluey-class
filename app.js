@@ -173,3 +173,17 @@ $("#img").onchange = async e => {
 
 $("#tot").textContent = S.get("stars", 0);
 route();
+
+// PWA install
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let deferred = null; const ib = $("#install");
+if (!standalone && isIOS) ib.hidden = false;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; if (!standalone) ib.hidden = false; });
+addEventListener("appinstalled", () => ib.hidden = true);
+ib.onclick = async () => {
+  if (deferred) { deferred.prompt(); const { outcome } = await deferred.userChoice; deferred = null; if (outcome === "accepted") ib.hidden = true; }
+  else $("#iosSheet").hidden = false;
+};
+$("#sheetOk").onclick = () => $("#iosSheet").hidden = true;

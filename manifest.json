@@ -1,1 +1,2 @@
-{"name":"Puppy Teacher – המורה של אופיר","short_name":"Puppy Teacher","lang":"he","dir":"rtl","start_url":"./","display":"standalone","background_color":"#FFF8EF","theme_color":"#FFF8EF","icons":[{"src":"assets/wave.webp","sizes":"400x400","type":"image/webp"}]}
+{"name":"Puppy Teacher – המורה של אופיר","short_name":"Puppy Teacher","lang":"he","dir":"rtl","id":"./","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#FFF8EF","theme_color":"#FFF8EF",
+"icons":[{"src":"assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"assets/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}

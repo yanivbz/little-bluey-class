@@ -9,7 +9,7 @@ header{position:fixed;top:0;inset-inline:0;display:flex;align-items:center;justi
 main{max-width:520px;margin:0 auto;padding:72px 20px 140px}
 .screen{display:none;flex-direction:column;align-items:center;gap:18px}.screen.on{display:flex;animation:in .4s ease}
 @keyframes in{from{opacity:0;transform:translateY(10px)}}
-.gear{position:fixed;top:14px;right:18px;font-size:1.6rem;z-index:6;filter:hue-rotate(220deg) saturate(.5)}
+.gear{filter:hue-rotate(220deg) saturate(.5)}
 h1{font-family:Rubik;font-weight:700;font-size:2.8rem;margin:10px 0 0}h2{font-family:Rubik}
 .sub{margin:0;font-size:1.15rem;opacity:.85}
 .pup{width:62%;max-width:280px;animation:bob 3s ease-in-out infinite;filter:drop-shadow(0 8px 10px #b98a6a22)}
@@ -54,3 +54,22 @@ textarea{min-height:150px;font-size:1.4rem;line-height:1.6}
 .sheet>div{background:var(--bg);width:100%;border-radius:28px 28px 0 0;padding:22px;text-align:center;font-size:1.3rem}
 .sheet img{width:110px}.sheet p{margin:8px 0 16px;line-height:1.6}
 [hidden]{display:none!important}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+.choices button{background:#fff;border-radius:26px;padding:18px 0;font-family:Rubik;font-weight:700;font-size:2.6rem;box-shadow:var(--sh);transition:transform .15s,background .3s}
+.choices button:active{transform:scale(.95)}.choices .ok{background:#bfe7cb}.choices .no{opacity:.45;animation:shake .4s}.choices .hint{background:var(--mint);box-shadow:0 0 0 4px #9fd8b2}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+textarea#pWords{font-size:1.9rem;line-height:1.7}
+.nik{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.nik button{min-width:0;height:58px;font-size:2rem;font-family:'Rubik','Arial Hebrew',sans-serif}
+.wlist,.letters{display:flex;flex-wrap:wrap;gap:6px}.wlist button{background:var(--peach);border-radius:12px;padding:6px 12px;font-size:1.5rem}
+.letters button{background:#fff;border:2px solid var(--lavD);border-radius:14px;min-width:56px;height:64px;font-size:2.3rem}.letters .sel{background:var(--lav);border-color:var(--ink)}
+.review{display:flex;gap:10px}.review button{background:#fff;border-radius:18px;padding:10px 16px;font-size:1.1rem;box-shadow:var(--sh)}
+.rec{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f3e8dc}.rec span{flex:1;font-size:1.5rem}.rec button{font-size:1.4rem;padding:4px 6px}.rec .live{animation:bob .6s infinite}
+/* layout-shift fixes */
+@font-face{font-family:"VR Fallback";src:local("Arial");size-adjust:104%;ascent-override:95%;descent-override:25%}
+body{font-family:'Varela Round','Rubik',"VR Fallback",sans-serif}
+header{height:72px;background:var(--bg)}
+.nav,.gear{width:44px;height:44px;display:flex;align-items:center;justify-content:center;line-height:1;font-size:1.5rem}
+.star{min-width:72px;height:36px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.pup{height:auto;aspect-ratio:369/400;object-fit:contain}
+.install{height:38px}.install[hidden]{display:inline-flex!important;visibility:hidden}
+.dots{min-height:12px}

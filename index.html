@@ -4,17 +4,16 @@
 <title>Puppy Teacher · המורה של אופיר</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFF8EF"><link rel="icon" href="assets/icon-192.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Puppy Teacher"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&family=Varela+Round&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"></head>
+<link rel="preload" href="assets/wave.webp" as="image"><link rel="stylesheet" href="style.css"></head>
 <body>
 <div class="clouds"><i class="c1"></i><i class="c2"></i></div>
-<header><button class="nav" id="back" aria-label="בית">🏠</button><div class="dots" id="dots"></div><div class="star">⭐ <b id="tot">0</b></div></header>
+<header><button class="nav" id="back" hidden aria-label="בית">🏠</button><button class="nav gear" id="gear" data-go="parent" aria-label="הורים">⚙️</button><div class="dots" id="dots"></div><div class="star">⭐ <b id="tot">0</b></div></header>
 
 <main>
 <section id="home" class="screen">
- <button class="gear" data-go="parent" aria-label="הורים">⚙️</button>
  <button class="install" id="install" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg> התקנת האפליקציה</button>
  <p class="brand">Puppy Teacher · המורה של אופיר</p><h1>שלום אופיר!</h1><p class="sub">מוכנה ללמוד ולהתקדם היום? 🩷</p>
- <img class="pup" data-pose="wave" alt="">
+ <img class="pup" data-pose="wave" src="assets/wave.webp" width="369" height="400" alt="">
  <div class="cards">
   <button class="card peach" data-go="modes"><b>הכתבה</b><span>נתחיל לכתוב יפה!</span><em>📝</em></button>
   <button class="card mint" data-go="math"><b>חשבון</b><span>בואי נספור ונתרגל!</span><em class="num">1+2</em></button>
@@ -22,30 +21,32 @@
 </section>
 
 <section id="modes" class="screen">
- <div class="talk"><div class="bubble" id="bm">איך נכתוב היום, אופיר?</div><img class="pup sm" data-pose="pencil" alt=""></div>
+ <div class="talk"><div class="bubble" id="bm">איך נכתוב היום, אופיר?</div><img class="pup sm" data-pose="pencil" src="assets/pencil.webp" width="318" height="400" alt=""></div>
  <select id="listSel"></select>
  <div class="list">
-  <button class="row peach" data-go="full">👀 <span><b>רואים ומעתיקים</b></span></button>
-  <button class="row lav" data-go="flash">⚡ <span><b>מסתכלים וזוכרים</b></span></button>
-  <button class="row mint" data-go="class">🔊 <span><b>שומעים וכותבים</b></span></button>
+  <button class="row peach" data-go="full">👀 <span><b>תסתכלי ותעתיקי</b></span></button>
+  <button class="row lav" data-go="flash">⚡ <span><b>תסתכלי ותזכרי</b></span></button>
+  <button class="row peach" data-go="hard" id="hardBtn" hidden>⭐ <span><b>מילים לתרגול (<span id="hardN"></span>)</b></span></button>
+  <button class="row mint" data-go="class">🔊 <span><b>תקשיבי ותכתבי</b></span></button>
  </div>
 </section>
 
 <section id="dict" class="screen">
- <div class="talk"><div class="bubble" id="bd"></div><img class="pup sm" id="pd" alt=""></div>
+ <div class="talk"><div class="bubble" id="bd"></div><img class="pup sm" id="pd" src="assets/pencil.webp" width="318" height="400" alt=""></div>
  <div class="panel"><div class="word" id="word"></div>
   <button class="play" id="play" aria-label="השמעה">▶</button>
   <button class="chip" id="again">↻ הפעל שוב</button></div>
+ <div class="review" id="review" hidden><button data-ok="1">✔️ נכון</button><button data-ok="0">✖️ לתרגל שוב</button></div>
  <button class="main" id="dMain">המשך</button>
  <button class="link" id="dPrev">→ הקודמת</button>
 </section>
 
 <section id="math" class="screen">
- <div class="talk"><div class="bubble" id="bmath">בואי נפתור במחברת!</div><img class="pup sm" id="pm" alt=""></div>
+ <div class="talk"><div class="bubble" id="bmath">בואי נפתור במחברת!</div><img class="pup sm" id="pm" src="assets/pencil.webp" width="318" height="400" alt=""></div>
  <div class="lv" id="lv"></div>
  <div class="panel"><div class="ex" id="ex"></div><div class="aid" id="aid"></div>
   <button class="chip" id="aidBtn">🔵 עזרה</button></div>
- <button class="main" id="mMain">בדיקה</button>
+ <div class="choices" id="ch"></div>
 </section>
 
 <section id="parent" class="screen">
@@ -53,13 +54,14 @@
  <div class="plist" id="plist"></div>
  <div class="box">
   <input id="pName" placeholder="שם הרשימה (למשל: שבוע 3)">
-  <div class="nik" id="nik"></div>
-  <textarea id="pWords" placeholder="מילה בכל שורה, עם ניקוד"></textarea>
+    <textarea id="pWords" placeholder="מילה בכל שורה, עם ניקוד"></textarea>
+  <p class="note">או לחצו על מילה ואז על אות כדי לשנות לה ניקוד:</p><div class="wlist" id="wlist"></div><div class="letters" id="letters"></div><div class="nik" id="nik"></div>
   <div class="btnrow"><button id="auto">✨ ניקוד אוטומטי</button><button id="photoBtn">📷 צילום דף</button></div>
   <input type="file" accept="image/*" id="img" hidden>
   <div id="status" class="note"></div>
   <img id="prev" hidden alt="">
   <div id="sugg" hidden><p class="note">הצעה – אפשר לערוך ואז לאשר:</p><textarea id="sWords"></textarea><button id="okS">✔ אישור והחלפה</button></div>
+  <div id="recs" hidden><p class="note">🎙️ הקלטת קול להכתבה (לא חובה, עד 3 שניות למילה):</p><div id="recList"></div></div>
   <div class="btnrow"><button class="save" id="save">💾 שמירה</button><button id="newL">➕ חדשה</button></div>
  </div>
  <label class="note">שניות הצגה במצב זיכרון <input type="number" id="sec" min="1" max="15"></label>

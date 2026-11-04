@@ -7,7 +7,7 @@
 <link rel="preload" href="assets/wave.webp" as="image"><link rel="stylesheet" href="style.css"></head>
 <body>
 <div class="clouds"><i class="c1"></i><i class="c2"></i></div>
-<header><button class="nav" id="back" hidden aria-label="בית">🏠</button><button class="nav gear" id="gear" data-go="parent" aria-label="הורים">⚙️</button><div class="dots" id="dots"></div><div class="star">⭐ <b id="tot">0</b></div></header>
+<header><button class="nav" id="back" hidden aria-label="בית">🏠</button><button class="nav gear" id="gear" data-go="parent" aria-label="הורים">⚙️</button><div class="dots" id="dots"></div><div class="star coin"><i class="cn"></i><b class="coinN">0</b></div></header>
 
 <main>
 <section id="home" class="screen">
@@ -17,6 +17,7 @@
  <div class="cards">
   <button class="card peach" data-go="modes"><b>הכתבה</b><span>נתחיל לכתוב יפה!</span><em>📝</em></button>
   <button class="card mint" data-go="math"><b>חשבון</b><span>בואי נספור ונתרגל!</span><em class="num">1+2</em></button>
+  <button class="card lav wide" data-go="room"><b>החדר שלי</b><span>מקשטים עם מטבעות!</span><em>🧸</em></button>
  </div>
 </section>
 
@@ -49,6 +50,13 @@
  <div class="choices" id="ch"></div>
 </section>
 
+<section id="room" class="screen">
+ <h1 class="rt">החדר שלי</h1>
+ <div class="roombox" id="roombox"><img class="rbg" src="assets/room/bg.webp" alt=""><img class="rpup" src="assets/wave.webp" alt="" width="369" height="400"></div>
+ <div class="opt" id="opt" hidden><button id="optBack">↩️ החזרה למגש</button></div>
+ <div class="tray" id="tray"></div>
+</section>
+
 <section id="parent" class="screen">
  <h2>אזור הורים</h2>
  <div class="plist" id="plist"></div>
@@ -68,6 +76,7 @@
 </section>
 </main>
 <div id="fx"></div>
+<div class="toast" id="toast" hidden>גרסה חדשה מוכנה <button id="upd">לעדכן</button></div>
 <div class="sheet" id="iosSheet" hidden><div><img src="assets/wave.webp" alt=""><p>לחצו על כפתור השיתוף ⬆️<br>ואז "הוסף למסך הבית"</p><button class="main" id="sheetOk">הבנתי</button></div></div>
-<script src="words.js"></script><script src="app.js"></script>
+<script src="words.js"></script><script src="app.js"></script><script src="room.js"></script>
 </body></html>

@@ -17,7 +17,10 @@ function speak(t) {
   u.lang = "he-IL"; u.rate = .8; if (voice) u.voice = voice; speechSynthesis.speak(u); return !!voice;
 }
 const say = (el, t, talk = true) => { el.textContent = t; el.style.animation = "none"; el.offsetWidth; el.style.animation = ""; if (talk) speak(t); };
-const addStar = n => { S.set("stars", S.get("stars", 0) + n); $("#tot").textContent = S.get("stars", 0); };
+if (!S.get("coinMig", false)) { S.set("coins", S.get("coins", 0) + S.get("stars", 0)); S.set("coinMig", true); }
+const coins = () => S.get("coins", 0);
+const showCoins = () => $$(".coinN").forEach(e => e.textContent = coins());
+const addCoin = n => { S.set("coins", coins() + n); showCoins(); };
 function party() {
   const c = ["#F8B49A", "#C9B6E8", "#9fd8b2", "#ffd77a"];
   for (let i = 0; i < 30; i++) { const s = document.createElement("span");
@@ -33,7 +36,7 @@ function route() {
   const scr = ["full", "flash", "class", "hard"].includes(h) ? "dict" : h;
   $$(".screen").forEach(s => s.classList.toggle("on", s.id === scr));
   $("#back").hidden = h === "home"; $("#gear").hidden = h !== "home";
-  ({ dict: () => startDict(h), math: startMath, parent: renderParent, modes: renderModes })[scr]?.();
+  ({ dict: () => startDict(h), math: startMath, parent: renderParent, room: () => window.renderRoom?.(), modes: renderModes })[scr]?.();
 }
 addEventListener("hashchange", route);
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go); });
@@ -101,14 +104,14 @@ function show() {
 $("#play").onclick = $("#again").onclick = () => mode === "flash" ? show() : sayWord(words[wi]);
 $("#dPrev").onclick = () => { wi--; show(); };
 $("#review").onclick = e => { const b = e.target.closest("[data-ok]"); if (!b) return;
-  const ok = b.dataset.ok === "1"; markWord(words[wi], ok);
+  const ok = b.dataset.ok === "1"; markWord(words[wi], ok); if (ok) addCoin(1);
   say($("#bd"), ok ? rnd(PRAISE) : "לא נורא, נתרגל אותה שוב, אופיר 💪", ok); if (ok) pose($("#pd"), "cheer");
   $("#review").hidden = true; };
 $("#dMain").onclick = () => {
   if (stage === 3) return startDict(location.hash.slice(1));
   if (stage === 1) return reveal();
   if (wi < words.length - 1) { wi++; return show(); }
-  addStar(1); party(); pose($("#pd"), "cheer"); dots(words.length, words.length); $("#review").hidden = true;
+  addCoin(3 + (mode === "full" || mode === "flash" ? words.length : 0)); party(); pose($("#pd"), "cheer"); dots(words.length, words.length); $("#review").hidden = true;
   say($("#bd"), "סיימת את הרשימה! כל הכבוד אופיר!"); $("#word").hidden = false; $("#word").classList.remove("h");
   $("#word").textContent = "⭐"; $("#play").hidden = $("#again").hidden = $("#dPrev").hidden = true;
   $("#dMain").textContent = "🔁 שוב"; stage = 3;
@@ -143,9 +146,9 @@ $("#ch").onclick = e => {
   const b = e.target.closest("[data-v]"); if (!b || lock || b.disabled) return;
   if (+b.dataset.v === ex.ans) {
     lock = true; b.classList.add("ok"); $("#ex .q").outerHTML = `<span class="a">${ex.ans}</span>`;
-    pose($("#pm"), "cheer"); if (!miss) got++; say($("#bmath"), rnd(PRAISE), Math.random() < .5);
+    pose($("#pm"), "cheer"); if (!miss) got++; addCoin(1); say($("#bmath"), rnd(PRAISE), Math.random() < .5);
     setTimeout(() => { if (++q < 10) return next();
-      addStar(Math.max(1, Math.ceil(got / 3))); party(); dots(10, 10);
+      addCoin(3); party(); dots(10, 10);
       say($("#bmath"), "סיימת 10 תרגילים! את אלופה אופיר!"); setTimeout(startMath, 3200); }, 1300);
   } else {
     miss++; b.classList.add("no"); b.disabled = true; pose($("#pm"), "think");
@@ -259,7 +262,7 @@ $("#img").onchange = async e => {
   } catch { st("הזיהוי נכשל. התמונה נשמרה, אפשר להקליד ידנית."); }
 };
 
-$("#tot").textContent = S.get("stars", 0);
+showCoins();
 route();
 
 // parent voice recordings per word (optional)
@@ -285,7 +288,12 @@ $("#recList").onclick = async e => {
 };
 
 // PWA install
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(reg => {
+  const ask = w => { const t = $("#toast"); t.hidden = false; $("#upd").onclick = () => w.postMessage("skip"); };
+  if (reg.waiting && navigator.serviceWorker.controller) ask(reg.waiting);
+  reg.onupdatefound = () => { const w = reg.installing; w.onstatechange = () => w.state === "installed" && navigator.serviceWorker.controller && ask(w); };
+  let done; navigator.serviceWorker.oncontrollerchange = () => { if (!done) { done = 1; location.reload(); } };
+}).catch(() => {});
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 let deferred = null; const ib = $("#install");

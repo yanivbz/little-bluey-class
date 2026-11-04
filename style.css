@@ -73,3 +73,20 @@ header{height:72px;background:var(--bg)}
 .pup{height:auto;aspect-ratio:369/400;object-fit:contain}
 .install{height:38px}.install[hidden]{display:inline-flex!important;visibility:hidden}
 .dots{min-height:12px}
+.cn{display:inline-block;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe48a,#f2b632);box-shadow:inset 0 0 0 2px #e0a020;vertical-align:-4px}
+.coin{gap:6px}
+.cards .wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:14px;padding:14px}.cards .wide em{font-size:2.2rem}.cards .wide b{font-size:1.6rem}
+#room{gap:10px}.rt{font-size:2.2rem;margin:0}
+.roombox{position:relative;width:min(100%,calc((100dvh - 400px)*0.5625));aspect-ratio:9/16;border-radius:26px;overflow:hidden;box-shadow:var(--sh);touch-action:none}
+.rbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rpup{position:absolute;left:27%;top:38%;width:46%;height:auto;z-index:5;pointer-events:none}
+.it{position:absolute;height:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 3px 3px #0002)}
+.opt{display:flex;gap:10px;align-items:center;background:#fff;border-radius:18px;padding:8px 14px;box-shadow:var(--sh)}.opt button{background:var(--lav);border-radius:14px;padding:8px 12px}
+.tray{display:flex;gap:10px;overflow-x:auto;width:100%;padding:6px 2px 10px;scroll-snap-type:x mandatory}
+.tray button{flex:0 0 92px;height:112px;background:#fff;border-radius:20px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;scroll-snap-align:start}
+.tray img{width:64px;height:64px;object-fit:contain}.tray span{font-weight:700;display:flex;gap:4px;align-items:center}.tray .poor{opacity:.55}.tray .own{background:var(--mint)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:22px;padding:10px 16px;z-index:20;display:flex;gap:10px;align-items:center;white-space:nowrap}
+.toast button{background:var(--peachD);color:#fff;border-radius:14px;padding:6px 12px}
+@media (min-width:700px){main{max-width:640px}}
+@media (max-height:900px){#home .pup{max-width:225px}#home h1{font-size:2.4rem}}
+main:has(#room.on){padding-bottom:20px}

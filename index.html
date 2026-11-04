@@ -1,52 +1,69 @@
 <!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Little Bluey Class – הכיתה של אופיר</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Puppy Teacher · המורה של אופיר</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFF8EF"><link rel="icon" href="assets/wave.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&family=Varela+Round&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css"></head>
 <body>
-<header><button class="icon" id="homeBtn" aria-label="בית">🏠</button><h1>⭐ <span id="totStars">0</span></h1><button class="icon" data-go="parent" aria-label="הורים">⚙️</button></header>
-<main>
-<div class="cast"><div class="pup bluey" id="pupB"></div><div class="bubble" id="bubble">שלום אופיר!</div><div class="pup bingo" id="pupG"></div></div>
+<div class="clouds"><i class="c1"></i><i class="c2"></i></div>
+<header><button class="nav" id="back" aria-label="בית">🏠</button><div class="dots" id="dots"></div><div class="star">⭐ <b id="tot">0</b></div></header>
 
-<section class="screen" id="home">
- <div class="card" style="margin-bottom:16px"><label for="listSel">רשימת מילים:</label><select id="listSel"></select></div>
- <div class="btns">
-  <button class="big b" data-go="full">👀 הצגה מלאה<small>רואים ומעתיקים</small></button>
-  <button class="big v" data-go="flash">⚡ זיכרון<small>מסתכלים, זוכרים, כותבים</small></button>
-  <button class="big o" data-go="class">🔊 הכתבה<small>שומעים וכותבים</small></button>
-  <button class="big g" data-go="math">➕ חשבון<small>פותרים במחברת</small></button>
+<main>
+<section id="home" class="screen">
+ <button class="gear" data-go="parent" aria-label="הורים">⚙️</button>
+ <p class="brand">Puppy Teacher · המורה של אופיר</p><h1>שלום אופיר!</h1><p class="sub">מוכנה ללמוד ולהתקדם היום? 🩷</p>
+ <img class="pup" data-pose="wave" alt="">
+ <div class="cards">
+  <button class="card peach" data-go="modes"><b>הכתבה</b><span>נתחיל לכתוב יפה!</span><em>📝</em></button>
+  <button class="card mint" data-go="math"><b>חשבון</b><span>בואי נספור ונתרגל!</span><em class="num">1+2</em></button>
  </div>
 </section>
 
-<section class="screen" id="dict"><div class="card">
- <div class="prog" id="dProg"></div>
- <div class="word" id="dWord"></div>
- <div class="row" id="dBtns"></div>
-</div></section>
+<section id="modes" class="screen">
+ <div class="talk"><div class="bubble" id="bm">איך נכתוב היום, אופיר?</div><img class="pup sm" data-pose="pencil" alt=""></div>
+ <select id="listSel"></select>
+ <div class="list">
+  <button class="row peach" data-go="full">👀 <span><b>רואים ומעתיקים</b></span></button>
+  <button class="row lav" data-go="flash">⚡ <span><b>מסתכלים וזוכרים</b></span></button>
+  <button class="row mint" data-go="class">🔊 <span><b>שומעים וכותבים</b></span></button>
+ </div>
+</section>
 
-<section class="screen" id="math"><div class="card">
+<section id="dict" class="screen">
+ <div class="talk"><div class="bubble" id="bd"></div><img class="pup sm" id="pd" alt=""></div>
+ <div class="panel"><div class="word" id="word"></div>
+  <button class="play" id="play" aria-label="השמעה">▶</button>
+  <button class="chip" id="again">↻ הפעל שוב</button></div>
+ <button class="main" id="dMain">המשך</button>
+ <button class="link" id="dPrev">→ הקודמת</button>
+</section>
+
+<section id="math" class="screen">
+ <div class="talk"><div class="bubble" id="bmath">בואי נפתור במחברת!</div><img class="pup sm" id="pm" alt=""></div>
  <div class="lv" id="lv"></div>
- <div class="prog" id="mProg"></div>
- <div class="ex" id="ex"></div>
- <div class="dots" id="dots"></div>
- <div class="row"><button class="big p" id="aidBtn">🔵 עזרה</button><button class="big b" id="mBtn">בדיקה ✔️</button></div>
- <div class="stars" id="mStars"></div>
-</div></section>
+ <div class="panel"><div class="ex" id="ex"></div><div class="aid" id="aid"></div>
+  <button class="chip" id="aidBtn">🔵 עזרה</button></div>
+ <button class="main" id="mMain">בדיקה</button>
+</section>
 
-<section class="screen" id="parent"><div class="card" style="text-align:right">
+<section id="parent" class="screen">
  <h2>אזור הורים</h2>
- <div class="lists" id="lists"></div>
- <label>שם הרשימה</label><input id="pName" placeholder="למשל: שבוע 3">
- <label>מילים (מילה בכל שורה, עם ניקוד)</label><textarea id="pWords"></textarea>
- <div class="row"><button class="big g" id="saveList">💾 שמירה</button><button class="big b" id="newList">➕ רשימה חדשה</button></div>
- <label>צילום דף מילים</label><input type="file" accept="image/*" id="img"><img id="prev" hidden alt="">
- <p class="note">זיהוי טקסט אוטומטי (OCR) – בקרוב. בינתיים הקלידו את המילים ידנית.</p>
- <label>זמן הצגה במצב זיכרון (שניות)</label><input type="number" id="flashSec" min="1" max="15">
- <p class="note">אם אין קול עברי במכשיר, בהכתבה תופיע המילה במקום הקראה.</p>
-</div></section>
+ <div class="plist" id="plist"></div>
+ <div class="box">
+  <input id="pName" placeholder="שם הרשימה (למשל: שבוע 3)">
+  <div class="nik" id="nik"></div>
+  <textarea id="pWords" placeholder="מילה בכל שורה, עם ניקוד"></textarea>
+  <div class="btnrow"><button id="auto">✨ ניקוד אוטומטי</button><button id="photoBtn">📷 צילום דף</button></div>
+  <input type="file" accept="image/*" id="img" hidden>
+  <div id="status" class="note"></div>
+  <img id="prev" hidden alt="">
+  <div id="sugg" hidden><p class="note">הצעה – אפשר לערוך ואז לאשר:</p><textarea id="sWords"></textarea><button id="okS">✔ אישור והחלפה</button></div>
+  <div class="btnrow"><button class="save" id="save">💾 שמירה</button><button id="newL">➕ חדשה</button></div>
+ </div>
+ <label class="note">שניות הצגה במצב זיכרון <input type="number" id="sec" min="1" max="15"></label>
+</section>
 </main>
-<div id="confetti"></div>
+<div id="fx"></div>
 <script src="words.js"></script><script src="app.js"></script>
 </body></html>

@@ -1,172 +1,175 @@
-const $ = s => document.querySelector(s);
-const store = {
-  get: (k, d) => { try { return JSON.parse(localStorage.getItem("ofir_" + k)) ?? d; } catch { return d; } },
-  set: (k, v) => localStorage.setItem("ofir_" + k, JSON.stringify(v))
-};
-let lists = store.get("lists", null) || structuredClone(window.SEED_LISTS);
-let cur = store.get("cur", lists[0]?.id), editId = null;
-const PRAISE = ["כל הכבוד אופיר!", "מעולה אופיר!", "וואו, אופיר, איזה יופי!", "את אלופה אופיר!", "יופי של עבודה אופיר!"];
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+const S = { get: (k, d) => { try { return JSON.parse(localStorage.getItem("ofir_" + k)) ?? d; } catch { return d; } },
+            set: (k, v) => { try { localStorage.setItem("ofir_" + k, JSON.stringify(v)); return true; } catch { alert("אין מספיק מקום לשמירה"); return false; } } };
+let lists = S.get("lists", null) || structuredClone(window.SEED_LISTS), cur = S.get("cur", lists[0]?.id);
+const PRAISE = ["כל הכבוד אופיר!", "מעולה אופיר!", "את אלופה, אופיר!", "יופי של עבודה, אופיר!"];
 const rnd = a => a[Math.floor(Math.random() * a.length)];
+const pose = (img, p) => img.src = `assets/${p}.webp`;
+$$("img[data-pose]").forEach(i => pose(i, i.dataset.pose));
 
-// ---- Characters (original drawings) ----
-const pup = (main, light, dark, name) => `<svg viewBox="0 0 120 120" aria-hidden="true">
- <path d="M28 40 L22 8 L48 30Z M92 40 L98 8 L72 30Z" fill="${dark}"/>
- <ellipse cx="60" cy="62" rx="40" ry="36" fill="${main}"/>
- <ellipse cx="60" cy="78" rx="24" ry="18" fill="${light}"/>
- <ellipse cx="42" cy="52" rx="12" ry="10" fill="${dark}" opacity=".5"/>
- <circle cx="46" cy="56" r="6" fill="#222"/><circle cx="74" cy="56" r="6" fill="#222"/>
- <circle cx="48" cy="54" r="2" fill="#fff"/><circle cx="76" cy="54" r="2" fill="#fff"/>
- <ellipse cx="60" cy="70" rx="6" ry="4.5" fill="#222"/>
- <path d="M52 80 Q60 88 68 80" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
- <circle cx="36" cy="72" r="5" fill="#ff9fb2" opacity=".7"/><circle cx="84" cy="72" r="5" fill="#ff9fb2" opacity=".7"/>
-</svg><div>${name}</div>`;
-$("#pupB").innerHTML = pup("#5aa7e8", "#cfe8ff", "#2f5f9e", "בלואי 👩‍🏫");
-$("#pupG").innerHTML = pup("#f6a04d", "#ffe2bf", "#c4662a", "בינגו");
-
-// ---- Speech ----
-let heVoice = null;
-const loadVoices = () => heVoice = speechSynthesis?.getVoices().find(v => /^he|iw/i.test(v.lang)) || null;
-if ("speechSynthesis" in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+// speech
+let voice = null;
+const lv_ = () => voice = speechSynthesis.getVoices().find(v => /^(he|iw)/i.test(v.lang)) || null;
+if ("speechSynthesis" in window) { lv_(); speechSynthesis.onvoiceschanged = lv_; }
 function speak(t) {
   if (!("speechSynthesis" in window)) return false;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(t);
-  u.lang = "he-IL"; u.rate = 0.8; if (heVoice) u.voice = heVoice;
-  speechSynthesis.speak(u); return !!heVoice;
+  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t);
+  u.lang = "he-IL"; u.rate = .8; if (voice) u.voice = voice; speechSynthesis.speak(u); return !!voice;
 }
-function say(t, talk = true) { $("#bubble").textContent = t; if (talk) speak(t); }
-function stars(n) {
-  store.set("stars", store.get("stars", 0) + n); $("#totStars").textContent = store.get("stars", 0);
-}
+const say = (el, t, talk = true) => { el.textContent = t; el.style.animation = "none"; el.offsetWidth; el.style.animation = ""; if (talk) speak(t); };
+const addStar = n => { S.set("stars", S.get("stars", 0) + n); $("#tot").textContent = S.get("stars", 0); };
 function party() {
-  const c = $("#confetti");
-  for (let i = 0; i < 24; i++) {
-    const s = document.createElement("span"); s.textContent = rnd(["⭐", "🎉", "🐾", "💙", "🧡"]);
-    s.style.left = Math.random() * 100 + "%"; s.style.animationDelay = Math.random() * .5 + "s";
-    c.appendChild(s); setTimeout(() => s.remove(), 2200);
-  }
+  const c = ["#F8B49A", "#C9B6E8", "#9fd8b2", "#ffd77a"];
+  for (let i = 0; i < 30; i++) { const s = document.createElement("span");
+    Object.assign(s.style, { left: Math.random() * 100 + "%", background: rnd(c), animationDelay: Math.random() * .6 + "s" });
+    $("#fx").append(s); setTimeout(() => s.remove(), 2600); }
 }
-const btn = (txt, cls, fn) => { const b = document.createElement("button"); b.className = "big " + cls; b.innerHTML = txt; b.onclick = fn; return b; };
+const dots = (n, i) => $("#dots").innerHTML = n ? Array.from({ length: n }, (_, k) => `<i class="${k < i ? "done" : k === i ? "on" : ""}"></i>`).join("") : "";
 
-// ---- Routing ----
-function go(name) { location.hash = name; }
+// routing
+const go = h => location.hash = h;
 function route() {
-  const h = location.hash.slice(1) || "home";
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
-  clearTimeout(flashT);
-  if (["full", "flash", "class"].includes(h)) { $("#dict").classList.add("on"); startDict(h); }
-  else if (h === "math") { $("#math").classList.add("on"); startMath(); }
-  else if (h === "parent") { $("#parent").classList.add("on"); renderParent(); say("שלום! כאן ההורים עורכים את רשימות המילים.", false); }
-  else { $("#home").classList.add("on"); renderHome(); }
+  const h = location.hash.slice(1) || "home"; clearTimeout(ft); dots(0);
+  const scr = ["full", "flash", "class"].includes(h) ? "dict" : h;
+  $$(".screen").forEach(s => s.classList.toggle("on", s.id === scr));
+  $("#back").style.visibility = h === "home" ? "hidden" : "visible";
+  ({ dict: () => startDict(h), math: startMath, parent: renderParent, modes: renderModes })[scr]?.();
 }
+addEventListener("hashchange", route);
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go); });
-$("#homeBtn").onclick = () => go("home");
-window.addEventListener("hashchange", route);
+$("#back").onclick = () => go(["full", "flash", "class"].includes(location.hash.slice(1)) ? "modes" : "home");
 
-// ---- Home ----
-function renderHome() {
+function renderModes() {
   $("#listSel").innerHTML = lists.map(l => `<option value="${l.id}" ${l.id === cur ? "selected" : ""}>${l.name}</option>`).join("");
-  say("שלום אופיר! מה נלמד היום?", false);
 }
-$("#listSel").onchange = e => { cur = e.target.value; store.set("cur", cur); };
+$("#listSel").onchange = e => S.set("cur", cur = e.target.value);
 
-// ---- Dictation ----
-let words = [], wi = 0, mode = "", flashT;
+// dictation
+let words = [], wi = 0, mode, ft, stage;
 function startDict(m) {
-  mode = m; wi = 0;
-  words = (lists.find(l => l.id === cur) || lists[0] || { words: [] }).words;
-  if (!words.length) { $("#dWord").textContent = "אין מילים"; $("#dBtns").innerHTML = ""; return; }
-  say({ full: "בואי נעתיק את המילים למחברת!", flash: "תסתכלי טוב, ואז תכתבי מהזיכרון!", class: "תקשיבי טוב ותכתבי במחברת." }[m]);
-  setTimeout(showWord, m === "full" ? 0 : 1800);
+  mode = m; wi = 0; words = (lists.find(l => l.id === cur) || lists[0] || { words: [] }).words;
+  if (!words.length) return go("parent");
+  show();
 }
-function showWord() {
-  clearTimeout(flashT);
-  const w = words[wi], el = $("#dWord"), b = $("#dBtns"); b.innerHTML = "";
-  $("#dProg").textContent = `מילה ${wi + 1} מתוך ${words.length}`;
-  el.textContent = w; el.classList.remove("hidden");
-  if (mode === "full") {
-    b.append(btn("➡️ הקודמת", "b", () => { if (wi > 0) { wi--; showWord(); } }),
-             btn("הבאה ⬅️", "o", next));
-  } else if (mode === "flash") {
-    const sec = store.get("flashSec", 3);
-    flashT = setTimeout(() => { el.classList.add("hidden"); say("עכשיו תכתבי במחברת!", false);
-      b.append(btn("👀 להראות שוב", "v", showWord), btn("כתבתי! ⬅️", "o", next)); }, sec * 1000);
-  } else {
-    el.classList.add("hidden");
-    const ok = speak(w);
-    if (!ok) { el.classList.remove("hidden"); say("אין קול עברי במכשיר – אפשר לקרוא את המילה ✨", false); }
-    b.append(btn("🔊 שוב", "b", () => speak(w)),
-      btn("המשך ⬅️", "o", () => { el.classList.remove("hidden"); say("בדקי במחברת: ככה כותבים!", false); b.innerHTML = "";
-        b.append(btn("הבאה ⬅️", "g", next)); }));
+function show() {
+  clearTimeout(ft); dots(words.length, wi); stage = 0;
+  const w = words[wi], W = $("#word"), b = $("#bd");
+  W.textContent = w; W.classList.remove("h"); W.hidden = false;
+  $("#play").hidden = $("#again").hidden = true; $("#dPrev").hidden = mode !== "full" || wi === 0;
+  pose($("#pd"), "pencil"); $("#dMain").textContent = "הבאה";
+  if (mode === "full") say(b, wi ? "עכשיו את זו, אופיר" : "העתיקי למחברת, אופיר", !wi);
+  if (mode === "flash") {
+    say(b, "הסתכלי טוב...", false); $("#dMain").textContent = "כתבתי!";
+    ft = setTimeout(() => { W.classList.add("h"); $("#again").hidden = false; say(b, "עכשיו כתבי מהזיכרון!", false); }, S.get("sec", 3) * 1000);
+  }
+  if (mode === "class") {
+    W.hidden = true; $("#play").hidden = $("#again").hidden = false; $("#dMain").textContent = "המשך";
+    say(b, "הקשיבי אופיר...", false); stage = 1;
+    if (!speak(w)) { W.hidden = false; $("#play").hidden = true; say(b, "אין קול עברי במכשיר – קראי את המילה", false); }
   }
 }
-function next() {
-  if (mode !== "full" && Math.random() < .4) say(rnd(PRAISE));
-  if (wi < words.length - 1) { wi++; showWord(); return; }
-  stars(1); party(); say("סיימת את כל הרשימה! כל הכבוד אופיר! ⭐");
-  $("#dWord").textContent = "🏆"; $("#dProg").textContent = "";
-  $("#dBtns").innerHTML = ""; $("#dBtns").append(btn("🔁 שוב את הרשימה", "o", () => startDict(mode)), btn("🏠 בית", "b", () => go("home")));
-}
+$("#play").onclick = $("#again").onclick = () => mode === "flash" ? show() : speak(words[wi]);
+$("#dPrev").onclick = () => { wi--; show(); };
+$("#dMain").onclick = () => {
+  if (stage === 1) { stage = 2; $("#word").hidden = false; $("#play").hidden = $("#again").hidden = true;
+    pose($("#pd"), "think"); say($("#bd"), "בדקי במחברת: ככה כותבים!", false); $("#dMain").textContent = "הבאה"; return; }
+  if (wi < words.length - 1) { if (mode !== "full" && Math.random() < .35) { pose($("#pd"), "cheer"); speak(rnd(PRAISE)); } wi++; return show(); }
+  addStar(1); party(); pose($("#pd"), "cheer"); dots(words.length, words.length);
+  say($("#bd"), "סיימת את הרשימה! כל הכבוד אופיר!"); $("#word").hidden = false; $("#word").classList.remove("h");
+  $("#word").textContent = "⭐"; $("#play").hidden = $("#again").hidden = $("#dPrev").hidden = true;
+  $("#dMain").textContent = "🔁 שוב"; stage = 3;
+};
+// repeat handler (stage 3 -> restart)
+const _dm = $("#dMain").onclick; $("#dMain").onclick = () => stage === 3 ? startDict(mode) : _dm();
 
-// ---- Math ----
-const LEVELS = [["עד 10", 10, "add"], ["עד 20", 20, "add"], ["עד 29", 29, "add"], ["מה חסר?", 20, "miss"], ["חיסור", 20, "sub"]];
-let lv = store.get("lv", 0), q = 0, ex, revealed = false, aid = false, mStars = 0;
-$("#lv").innerHTML = LEVELS.map((l, i) => `<button data-lv="${i}">${l[0]}</button>`).join("");
-$("#lv").onclick = e => { const b = e.target.closest("[data-lv]"); if (b) { lv = +b.dataset.lv; store.set("lv", lv); startMath(); } };
-function startMath() {
-  q = 0; mStars = 0; $("#mStars").textContent = "";
-  document.querySelectorAll("#lv button").forEach((b, i) => b.classList.toggle("sel", i === lv));
-  say("בואי נפתור תרגילים במחברת!", false); newEx();
-}
-function newEx() {
-  const [, max, type] = LEVELS[lv], r = n => Math.floor(Math.random() * (n + 1));
+// math
+const LV = [["עד 10", 10, "+"], ["עד 20", 20, "+"], ["עד 29", 29, "+"], ["מה חסר?", 20, "?"], ["חיסור", 20, "-"]];
+let lvl = S.get("lv", 0), q, ex, rev, aid = false, got;
+$("#lv").innerHTML = LV.map((l, i) => `<button data-l="${i}">${l[0]}</button>`).join("");
+$("#lv").onclick = e => { const b = e.target.closest("[data-l]"); if (b) { S.set("lv", lvl = +b.dataset.l); startMath(); } };
+function startMath() { q = 0; got = 0; $$("#lv button").forEach((b, i) => b.classList.toggle("sel", i === lvl)); say($("#bmath"), "פתרי במחברת, אופיר", false); next(); }
+function next() {
+  const [, max, t] = LV[lvl], r = n => Math.floor(Math.random() * (n + 1));
   const s = Math.max(2, r(max)), a = r(s), b = s - a;
-  ex = type === "add" ? { t: `${a} + ${b} = `, ans: s, a, b } :
-       type === "miss" ? { t: `${a} + ? = ${s}`, ans: b, a, b } :
-       { t: `${s} − ${a} = `, ans: b, a: s, b: -a };
-  revealed = false; $("#mProg").textContent = `תרגיל ${q + 1} מתוך 10`;
-  $("#ex").innerHTML = ex.t.replace("?", "<span>?</span>") + (type !== "miss" ? "<span>?</span>" : "");
-  $("#mBtn").textContent = "בדיקה ✔️"; drawAid();
+  ex = t === "+" ? { h: `${a} + ${b} = _`, ans: s, x: a, y: b } : t === "?" ? { h: `${a} + _ = ${s}`, ans: b, x: a, y: 0 } : { h: `${s} − ${a} = _`, ans: b, x: s, y: 0 };
+  rev = false; dots(10, q); pose($("#pm"), "pencil"); $("#mMain").textContent = "בדיקה";
+  $("#ex").innerHTML = ex.h.replace("_", '<span class="q">?</span>'); drawAid();
 }
 function drawAid() {
-  const d = $("#dots"); d.innerHTML = ""; if (!aid) return;
-  const frames = (n, cls, start = 0) => { let i = 0;
-    while (i < Math.abs(n) || i === 0 && n === 0) { if (n === 0) break;
-      const f = document.createElement("div"); f.className = "frame";
-      for (let k = 0; k < 10; k++) { const c = document.createElement("i"); if (i < Math.abs(n)) { c.className = cls; i++; } f.append(c); }
-      d.append(f); } };
-  if (ex.b < 0) frames(ex.a, "a"); else { frames(ex.a, "a"); frames(ex.b, "c"); }
+  const el = $("#aid"); el.innerHTML = ""; if (!aid) return;
+  const fr = (n, c) => { for (let i = 0; i < n; i += 10) el.insertAdjacentHTML("beforeend", `<div class="f">${Array.from({ length: 10 }, (_, k) => `<i class="${i + k < n ? c : ""}"></i>`).join("")}</div>`); };
+  fr(ex.x, "x"); fr(ex.y, "y");
 }
 $("#aidBtn").onclick = () => { aid = !aid; drawAid(); };
-$("#mBtn").onclick = () => {
-  if (!revealed) {
-    revealed = true; $("#ex").querySelector("span").outerHTML = `<span class="ans">${ex.ans}</span>`;
-    $("#mBtn").textContent = "המשך ⬅️"; say("זה נכון אצלך? " + rnd(PRAISE)); mStars++; $("#mStars").textContent = "⭐".repeat(mStars);
-  } else if (++q < 10) newEx();
-  else { stars(mStars); party(); say("סיימת 10 תרגילים! את אלופה אופיר!"); setTimeout(startMath, 2500); }
+$("#mMain").onclick = () => {
+  if (!rev) { rev = true; $("#ex .q").outerHTML = `<span class="a">${ex.ans}</span>`; pose($("#pm"), "think");
+    say($("#bmath"), "יצא לך " + ex.ans + "?", false); $("#mMain").textContent = "המשך"; got++; return; }
+  if (++q < 10) { if (Math.random() < .3) speak(rnd(PRAISE)); return next(); }
+  addStar(Math.ceil(got / 3)); party(); pose($("#pm"), "cheer"); dots(10, 10);
+  say($("#bmath"), "סיימת 10 תרגילים! את אלופה אופיר!"); setTimeout(startMath, 3000);
 };
 
-// ---- Parent area ----
+// parent area
+let editId = null, lastTA = $("#pWords");
+const NIK = [["ָ", "קמץ"], ["ַ", "פתח"], ["ֵ", "צירה"], ["ֶ", "סגול"], ["ִ", "חיריק"], ["ֹ", "חולם"], ["ֻ", "קובוץ"], ["ּ", "דגש/שורוק"], ["ְ", "שווא"], ["ֱ", "חטף סגול"], ["ֲ", "חטף פתח"], ["ֳ", "חטף קמץ"], ["ׁ", "שׁ ימנית"], ["ׂ", "שׂ שמאלית"]];
+$("#nik").innerHTML = NIK.map(([m, n]) => `<button title="${n}" data-m="${m}">ב${m}</button>`).join("");
+["#pWords", "#sWords"].forEach(s => $(s).addEventListener("focus", e => lastTA = e.target));
+$("#nik").addEventListener("pointerdown", e => e.preventDefault());
+$("#nik").onclick = e => { const m = e.target.dataset.m; if (!m) return; const t = lastTA, a = t.selectionStart;
+  t.setRangeText(m, a, t.selectionEnd, "end"); t.focus(); };
+const clean = s => s.normalize("NFC").split("\n").map(x => x.trim()).filter(Boolean);
 function renderParent() {
-  $("#lists").innerHTML = lists.map(l => `<div><span>${l.name} (${l.words.length})</span><span>
-    <button data-ed="${l.id}">✏️ עריכה</button><button data-del="${l.id}">🗑️</button></span></div>`).join("");
-  $("#flashSec").value = store.get("flashSec", 3);
+  $("#plist").innerHTML = lists.map(l => `<div><span>${l.name} · ${l.words.length}${l.img ? " 📷" : ""}</span><span>
+   ${l.img ? `<button data-v="${l.id}">🖼️</button>` : ""}<button data-e="${l.id}">✏️</button><button data-d="${l.id}">🗑️</button></span></div>`).join("");
+  $("#sec").value = S.get("sec", 3);
 }
-$("#lists").onclick = e => {
-  const ed = e.target.dataset.ed, del = e.target.dataset.del;
-  if (ed) { const l = lists.find(x => x.id === ed); editId = ed; $("#pName").value = l.name; $("#pWords").value = l.words.join("\n"); }
-  if (del && confirm("למחוק את הרשימה?")) { lists = lists.filter(x => x.id !== del); store.set("lists", lists); renderParent(); }
+$("#plist").onclick = e => { const d = e.target.dataset, l = lists.find(x => x.id === (d.e || d.d || d.v)); if (!l) return;
+  if (d.v) { const p = $("#prev"); p.src = l.img; p.hidden = false; p.scrollIntoView({ behavior: "smooth" }); }
+  if (d.e) { editId = l.id; $("#pName").value = l.name; $("#pWords").value = l.words.join("\n"); $("#prev").hidden = !l.img; if (l.img) $("#prev").src = l.img; }
+  if (d.d && confirm("למחוק?")) { lists = lists.filter(x => x !== l); S.set("lists", lists); renderParent(); } };
+$("#newL").onclick = () => { editId = null; $("#pName").value = $("#pWords").value = ""; $("#prev").hidden = true; $("#sugg").hidden = true; };
+$("#save").onclick = () => {
+  const w = clean($("#pWords").value); if (!w.length) return alert("נא להוסיף מילים");
+  const name = $("#pName").value.trim() || "רשימה חדשה", img = $("#prev").hidden ? null : $("#prev").src;
+  if (editId) Object.assign(lists.find(x => x.id === editId), { name, words: w, img });
+  else { editId = "l" + Date.now(); lists.push({ id: editId, name, words: w, img }); S.set("cur", cur = editId); }
+  if (S.set("lists", lists)) { renderParent(); $("#status").textContent = "נשמר ✔"; }
 };
-$("#newList").onclick = () => { editId = null; $("#pName").value = ""; $("#pWords").value = ""; $("#pName").focus(); };
-$("#saveList").onclick = () => {
-  const name = $("#pName").value.trim() || "רשימה חדשה", w = $("#pWords").value.split("\n").map(s => s.trim()).filter(Boolean);
-  if (!w.length) return alert("נא להוסיף מילים");
-  if (editId) Object.assign(lists.find(x => x.id === editId), { name, words: w });
-  else { editId = "l" + Date.now(); lists.push({ id: editId, name, words: w }); cur = editId; store.set("cur", cur); }
-  store.set("lists", lists); renderParent(); say("נשמר! 👍", false);
-};
-$("#flashSec").onchange = e => store.set("flashSec", Math.max(1, +e.target.value || 3));
-$("#img").onchange = e => { const f = e.target.files[0]; if (f) { const p = $("#prev"); p.src = URL.createObjectURL(f); p.hidden = false; } };
+$("#sec").onchange = e => S.set("sec", Math.max(1, +e.target.value || 3));
+const st = t => $("#status").textContent = t;
+function suggest(words) { $("#sWords").value = words.join("\n"); $("#sugg").hidden = false; }
+$("#okS").onclick = () => { $("#pWords").value = clean($("#sWords").value).join("\n"); $("#sugg").hidden = true; };
 
-$("#totStars").textContent = store.get("stars", 0);
+// Dicta Nakdan (CORS open; text/plain avoids preflight)
+$("#auto").onclick = async () => {
+  const src = clean($("#pWords").value).map(w => w.replace(/[\u0591-\u05C7]/g, "")); if (!src.length) return st("כתבו קודם מילים");
+  st("⏳ מנקד...");
+  try {
+    const r = await fetch("https://nakdan-2-0.loadbalancer.dicta.org.il/api", { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ task: "nakdan", data: src.join("\n"), genre: "modern" }) });
+    const j = await r.json();
+    const out = j.map(t => t.sep ? t.word : (t.options?.[0] || t.word).replace(/\|/g, "")).join("");
+    suggest(clean(out)); st("בדקו את הניקוד ואשרו");
+  } catch { st("השירות לא זמין. אפשר לנקד ב-nakdan.dicta.org.il ולהדביק כאן."); open("https://nakdan.dicta.org.il", "_blank"); }
+};
+
+// photo: compress + OCR
+$("#photoBtn").onclick = () => $("#img").click();
+$("#img").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const bmp = await createImageBitmap(f), k = Math.min(1, 1000 / Math.max(bmp.width, bmp.height));
+  const c = Object.assign(document.createElement("canvas"), { width: bmp.width * k, height: bmp.height * k });
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const p = $("#prev"); p.src = c.toDataURL("image/jpeg", .6); p.hidden = false;
+  st("⏳ מזהה מילים מהתמונה... (בפעם הראשונה זה לוקח קצת זמן)");
+  try {
+    if (!window.Tesseract) await new Promise((ok, no) => { const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; s.onload = ok; s.onerror = no; document.head.append(s); });
+    const { data } = await Tesseract.recognize(c, "heb", { logger: m => m.progress && st(`⏳ ${m.status} ${Math.round(m.progress * 100)}%`) });
+    const w = data.text.normalize("NFC").split(/[\s,.;:]+/).map(x => x.replace(/[^\u0590-\u05FF]/g, "")).filter(x => x.length > 1);
+    w.length ? (suggest([...new Set(w)]), st("זה מה שזוהה – ערכו ואשרו")) : st("לא זוהו מילים. התמונה נשמרה, אפשר להקליד ידנית.");
+  } catch { st("הזיהוי נכשל. התמונה נשמרה, אפשר להקליד ידנית."); }
+};
+
+$("#tot").textContent = S.get("stars", 0);
 route();
